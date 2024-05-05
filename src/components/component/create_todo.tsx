@@ -1,0 +1,91 @@
+import { Button } from "@/components/ui/button"
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+  } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogClose,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { addTodo } from '@/services/actions/addTodo'
+import { useToast } from "@/components/ui/use-toast"
+const formSchema:any = z.object({
+    title: z.string().nonempty().default(''),
+    description: z.string().nonempty().default(''),
+})
+export default function CreateTodo({id}: {id: number}) {
+    const form = useForm();
+    const { toast } = useToast()
+    async function onSubmit(values: z.infer<typeof formSchema>): Promise<void> {
+        const todo: CreateTodoResponse = await addTodo(values)
+        if (todo.status === 'success') {
+            toast({
+                title: 'Todo created',
+                description: 'Todo has been created',
+            })
+        } else {
+            toast({
+                title: 'Failed to create todo',
+                description: 'Todo has not been created',
+            })
+        }
+    }
+    return (
+        <div className="flex items-center py-4">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline">Create</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                  <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                      <FormItem>
+                      <FormLabel>Title</FormLabel>
+                      <FormControl>
+                          <Input placeholder="title" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                      </FormItem>
+                  )}
+                  />
+                  <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                      <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                          <Input placeholder="description" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                      </FormItem>
+                  )}
+                  />
+                <DialogFooter className="sm:justify-start">
+                  <Button type="submit"> Submit </Button>
+                  <DialogClose asChild>
+                  <Button variant="secondary"> Close </Button>
+                </DialogClose>
+              </DialogFooter>
+              </form>
+            </Form>
+              
+          </DialogContent>
+        </Dialog>
+      </div>
+    )
+}
